@@ -12,7 +12,7 @@ install.packages(c("nycflights13", "gapminder", "Lahman"))
 library('tidyverse')
 
 # book
-# http://r4ds.had.co.nz/data-visualisation.html
+# http://r4ds.had.co.nz/
 # solutions to exercises
 # https://jrnold.github.io/e4qf/index.html
 
@@ -161,7 +161,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
 
 ggplot(data = diamonds) + 
     geom_bar(mapping = aes(x = cut))
-<<<<<<< HEAD
+
 # the above uses the default stat for the geom, in this case count
 
 demo <- tribble(
@@ -258,8 +258,229 @@ ggplot(data = diamonds) +
 
 
 # 3.10
-=======
+# 4 Workflow basics
+#4.4.1 mispelled variable name
+#4.4.2 - filter goes in the data variable, and the carat filter has nothing to do with the mpg data
+ggplot(filter(mpg, cyl == 8)) + 
+    geom_point(mapping = aes(x = displ, y = hwy))
+    
+#4.4.3 - opt shift k = popup infor for all short cuts
 
-http://r4ds.had.co.nz/data-visualisation.html
+#5 Data transformation
 
->>>>>>> 3be522a7a908c46d2ac4f08ad51fd7aad59fa6e0
+#    install.packages("nycflights13")
+library(nycflights13)
+
+flights
+# tibbles are a dataframe tweaked to work better with tidyverse
+
+# filter the data to 3rd january records only
+filter(flights, month == 1, day == 3)
+
+jan1 <- filter(flights, month == 1, day == 1)
+dec25 <- filter(flights, month == 12, day == 25)
+
+# == does not work as a logic test for floating point numbers, due to differences in absolute accuracy
+1/49 * 49 == 1  # comes back as false
+near(1/49 * 49, 1) # comes back as true
+
+q3 <- filter(flights, month == 10 | month == 11 | month == 12)
+# Yes, using >= 10 would have been better, this was just an example
+
+q3 <- filter(flights, month %in% c(10,11,12))
+# this is using the magrittr package to pipe successive commands together
+
+#5.2.4.1 - etc etc. %in% is really useful!!
+filter(flights, arr_delay > 120)
+filter(flights, arr_delay > 120 & dest %in% c("IAH","HOU"))
+filter(flights, arr_delay > 120 & dest %in% c("IAH","HOU") & carrier %in% c("UA","AA","DL"))
+
+
+#5.2.4.2
+filter(flights, between(dep_time, left=0000, right=0600))
+
+#5.2.4.3 - 8255 have missing departure times
+filter(flights, is.na(dep_time))
+count(filter(flights, is.na(dep_time)))
+
+
+#5.2.4.4 anything to the power of 0, is zero. 'cause "maths".
+
+#5.3 arrange() - ordering function
+
+#missing values are always sorted at the end, regardless of the desc/asc
+arrange(flights, year, desc(month), desc(day))
+
+
+#5.3.1.1 note - FALSE is sorted before TRUE in ASC order, since it is a 0!!!
+arrange(flights, !is.na(dep_time))
+
+#5.3.1.2
+arrange(flights, desc(arr_delay))
+arrange(flights, dep_time)
+
+#5.3.1.3 If "fast" is the shortest flight time
+(arrange(flights, desc(air_time)))
+# nope, we have distance! so....
+arrange(flights, desc(distance/air_time))
+ # etc etc
+
+#5.4 select()
+
+# trim down the number of variables in the tibble
+select(flights, year, month, day) # specific columns
+select(flights, year:dep_delay)  # a range of columns that are next to each other
+select(flights, -(year:dep_delay)) # or the opposite - all other columns except that range
+
+select(flights, contains("delay")) # or just those colums that contain a certain string in their name
+
+# rename() is much better to use to change a column name, as it does NOT dropp all the others (like select() does)
+
+select(flights, hour, minute, everything()) # pull some colums to the front, and keep all others
+
+#5.4.1.1
+#5.4.1.2 - does not allow for a column to be selected more than once (no replication)
+select(flights, hour, hour, minute, minute, hour)
+
+#5.4.1.3 No difference in results, but it allos the passing of a vector / list, into the SELECT function
+# so code can be made dynamic
+vars <- c("year", "month", "day", "dep_delay", "arr_delay")
+select(flights,one_of(vars))
+
+#5.4.1.4 contains is not case sensitive! unless you change the default to FALSE
+select(flights, contains("TIME", ignore.case=FALSE))
+
+#5.5 mutate()
+flights_sml <- select(flights, 
+                      year:day, 
+                      ends_with("delay"), 
+                      distance, 
+                      air_time
+)
+
+mutate(flights_sml,
+       gain = arr_delay - dep_delay,
+       speed = distance / air_time * 60
+)
+
+mutate(flights_sml,
+       gain_per_hour = gain / hours,
+       gain = arr_delay - dep_delay,
+       hours = air_time / 60
+)    # you can refer to columns you create in mutaute, but only AFTER the cration statement, not like the above
+
+transmute(flights,
+          gain = arr_delay - dep_delay,
+          hours = air_time / 60,
+          gain_per_hour = gain / hours
+)
+# transmute ONLY provides the specified columns mutaate adds them to the end of the dataframe
+
+# functions used in mutate must be vectorized
+
+#5.5.2.1 - something like this - you get the idea
+flights
+transmute(flights,
+        dep_time, dep_delay, arr_time, arr_delay, hour, minute,
+        dep_after_midnight = (hour * 60) + minute,
+        arr_after_midnight = dep_after_midnight + air_time
+        )
+
+#5.5.2.2 - bad match, obviously, since these intergers are actually HHMM, not proper incremental numbers
+transmute(flights,
+       arr_time, dep_time,
+       delta = arr_time - dep_time)
+
+#5.5.2.3 - only works when the result stays within 0-60 bounds, as per above issue
+transmute(flights,
+          dep_time, sched_dep_time, dep_delay,
+          added_together = sched_dep_time + dep_delay,
+          matching = (dep_time == added_together))
+
+#5.5.2.4 = min_rank gives the delay from smallest to largest, so using DESC flips it to give the biggest delay first
+
+x <- c(5, 1, 3, 2, 2, NA)
+min_rank(x)
+arrange(flights, desc(min_rank(dep_delay)))
+
+#5.5.2.5 - due to 3 not being a multiple of 10, it does not overlap properly
+# add the values of vesctor 1, in sequential order, to the values of vector 2, looping through vector 1 three and a third times
+1:3 + 1:10
+
+#5.6 summarize() - grouped summaries
+
+# summarize works best with a group by, collapsing the data set to 1 record per group by combo, just like SQL
+by_day <- group_by(flights, year, month, day)
+summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
+          
+          
+          
+# piping with %>% FLOWS much better and soes not the creation of intermediate variable just to HOLD things
+# ELSE, you can just embed function within function withing function, using far too manay levels of parenthesis
+delays <- flights %>%   # first take the flights data
+    group_by(dest) %>%   # then group it by desination, # then sumamrize it to add these vars by dest
+    summarise( 
+        count = n(),
+        dist = mean(distance, na.rm = TRUE),
+        delay = mean(arr_delay, na.rm = TRUE)
+    ) %>%  
+    filter(count > 20, dest != "HNL") 
+# then filter destinations with more than 20 delays that are not honolulu - the na.rm removes NAs when calculating the mean, so as not to have the mean be NA (unknown, becuase it has an unknown value on at least one input record)
+
+ggplot(data = delays, mapping = aes(x = dist, y = delay)) +
+    geom_point(aes(size = count), alpha = 1/3) +
+    geom_smooth(se = FALSE)
+
+
+not_cancelled <- flights %>% 
+    filter(!is.na(dep_delay), !is.na(arr_delay))
+
+not_cancelled %>% 
+    group_by(year, month, day) %>% 
+    summarise(mean = mean(dep_delay))
+
+delays <- not_cancelled %>% 
+    group_by(tailnum) %>% 
+    summarise(
+        delay = mean(arr_delay)
+    )
+
+delays <- not_cancelled %>% 
+    group_by(tailnum) %>% 
+    summarise(
+        delay = mean(arr_delay, na.rm = TRUE),
+        n = n()
+    )
+
+## ggplot2 does not use PIPE, bu ggvis, its replacement wILL use the pipe
+
+delays %>% 
+    filter(n > 25) %>% 
+    ggplot(mapping = aes(x = n, y = delay)) + 
+    geom_point(alpha = 1/10)
+
+
+
+## baseball 
+#install.packages("Lahman")
+library(Lahman)
+batting <- as_tibble(Lahman::Batting)
+
+batters <- batting %>% 
+    group_by(playerID) %>% 
+    summarise(
+        ba = sum(H, na.rm = TRUE) / sum(AB, na.rm = TRUE),
+        ab = sum(AB, na.rm = TRUE)
+    )
+
+batters %>% 
+    filter(ab > 100) %>% 
+    ggplot(mapping = aes(x = ab, y = ba)) +
+    geom_point() + 
+    geom_smooth(se = FALSE)
+
+# teams preferably pick their better batters, giving them more at=bats, and thus an opportunity to improve their batting-average - duh! Bias
+
+# therefore, you need to be careful in how you look at some chunks of data as a result of thing like "selection" bias
+
+
