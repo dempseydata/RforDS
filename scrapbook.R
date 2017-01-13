@@ -161,6 +161,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
 
 ggplot(data = diamonds) + 
     geom_bar(mapping = aes(x = cut))
+<<<<<<< HEAD
 # the above uses the default stat for the geom, in this case count
 
 demo <- tribble(
@@ -257,3 +258,8 @@ ggplot(data = diamonds) +
 
 
 # 3.10
+=======
+
+http://r4ds.had.co.nz/data-visualisation.html
+
+>>>>>>> 3be522a7a908c46d2ac4f08ad51fd7aad59fa6e0
