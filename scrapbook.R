@@ -257,3 +257,8 @@ ggplot(data = diamonds) +
 
 
 # 3.10
+=======
+
+http://r4ds.had.co.nz/data-visualisation.html
+
+>>>>>>> 3be522a7a908c46d2ac4f08ad51fd7aad59fa6e0
