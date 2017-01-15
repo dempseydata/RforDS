@@ -258,7 +258,7 @@ ggplot(data = diamonds) +
 
 
 # 3.10
-<<<<<<< HEAD
+
 # 4 Workflow basics
 #4.4.1 mispelled variable name
 #4.4.2 - filter goes in the data variable, and the carat filter has nothing to do with the mpg data
@@ -484,11 +484,85 @@ batters %>%
 
 # therefore, you need to be careful in how you look at some chunks of data as a result of thing like "selection" bias
 
+#5.6.7.1.1 
+# 15 mins late for 50% of departures AND arrivals
+# not cancelled
+not_cancelled <- flights %>% 
+    filter(!is.na(dep_delay), !is.na(arr_delay))
 
-=======
+
+# total flights, number late leaving or arriving by 15 or more
+delays <- not_cancelled %>%
+    mutate(dep_gtr15 = dep_delay >= 15,
+           arr_gtr15 = arr_delay >= 15) %>%
+    group_by(tailnum) %>% 
+    summarise(
+        dep_gtr15 = sum(dep_gtr15),
+        arr_gtr15 = sum(arr_gtr15),
+        n = n()
+    ) %>%
+    filter(near(dep_gtr15 / n, 0.5) & near(arr_gtr15 / n, 0.5) )
+
+#5.6.7.1.2 
+# always 10 mins late or more
+delays <- not_cancelled %>%
+    mutate(arr_10 = arr_delay >= 10) %>%
+    group_by(tailnum) %>% 
+    summarise(
+        arr_10 = sum(arr_10),
+        n = n()
+    ) %>%
+    filter(arr_10 == n)
+
+#5.6.7.1.3
+# 30 minutes late 50%, or 30 minutes early 50%
+delays <- not_cancelled %>%
+    mutate(arr_neg30 = arr_delay <= -30,
+           arr_gtr30 = arr_delay >= 30) %>%
+    group_by(tailnum) %>% 
+    summarise(
+        arr_neg30 = sum(arr_neg30),
+        arr_gtr30 = sum(arr_gtr30),
+        n = n()
+    ) %>%
+    filter(near(arr_neg30 / n, 0.5) & near(arr_gtr30 / n, 0.5) )
+
+#5.6.7.1.2
+# number of flights by destination
+not_cancelled %>% count(dest)
+# mine
+not_cancelled %>%
+    group_by(dest) %>%
+    summarise(n=n())
+
+# total distance by tailnumber, for non-missing values of distance
+not_cancelled %>% count(tailnum, wt = distance)
+# mine
+not_cancelled %>%
+    filter(!is.na(distance)) %>%
+    group_by(tailnum) %>%
+    summarise(dist_sum = sum(distance))
+
+#5.6.7.1.3 - could probably use the actual departure and arrival time dep_time, arr_time
+# depends on how often these are specified, whilst the delay information is nulled out???
 
 
+flights %>%
+    mutate(cancel_yes = is.na(dep_delay) & is.na(arr_delay)) %>%
+    group_by(year, month, day) %>%
+    summarise(n_cancel = sum(cancel_yes),
+           n = n(),
+           share = n_cancel / n,
+           avg_delay = mean(dep_delay, na.rm = TRUE)) %>%
+    filter(share <= 0.15) %>%
+    ggplot(aes(x = avg_delay, y = share)) +
+    geom_point(position = 'jitter') +
+    geom_smooth()
+    
+# looks odd with some outliers where share > 0.5, so lets filter them out    
+# same again with delays over 15% -> far better relationship
+# there should be a better way of filtering for outliers
 
->>>>>>> 334043c6a440aa7a5b1201c40f44c8394f6f23c7
-#5.6.7.1 just before this link
-# http://r4ds.had.co.nz/transform.html#grouped-mutates-and-filters
+# 5.6.7.1.4 who are the carriers with the worst delays?
+# accounting for the worst airports too... (should be bad for all)
+##flights %>% group_by(carrier, dest) %>% summarise(n()))
