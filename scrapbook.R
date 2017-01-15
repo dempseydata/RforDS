@@ -258,6 +258,7 @@ ggplot(data = diamonds) +
 
 
 # 3.10
+<<<<<<< HEAD
 # 4 Workflow basics
 #4.4.1 mispelled variable name
 #4.4.2 - filter goes in the data variable, and the carat filter has nothing to do with the mpg data
@@ -484,3 +485,10 @@ batters %>%
 # therefore, you need to be careful in how you look at some chunks of data as a result of thing like "selection" bias
 
 
+=======
+
+
+
+>>>>>>> 334043c6a440aa7a5b1201c40f44c8394f6f23c7
+#5.6.7.1 just before this link
+# http://r4ds.had.co.nz/transform.html#grouped-mutates-and-filters
