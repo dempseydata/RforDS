@@ -599,7 +599,15 @@ not_cancelled %>%
 # 5.7 grouped mutates and filters
 # SKIPPING THIS - much of the same. moving to next section - scripts
 
-# 6
+# 6 - scripts.... Been doing it all along!!!
+
+# 7 exploratory data analysis
+# what kind of variation is within my variables?
+# what kind of co-variation is there between my variables?
+
+
+
+
 
 
 
