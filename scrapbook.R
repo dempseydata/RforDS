@@ -484,6 +484,7 @@ batters %>%
 
 # therefore, you need to be careful in how you look at some chunks of data as a result of thing like "selection" bias
 
+
 #5.6.7.1.1 
 # 15 mins late for 50% of departures AND arrivals
 # not cancelled
@@ -527,7 +528,7 @@ delays <- not_cancelled %>%
     ) %>%
     filter(near(arr_neg30 / n, 0.5) & near(arr_gtr30 / n, 0.5) )
 
-#5.6.7.1.2
+#5.6.7.2
 # number of flights by destination
 not_cancelled %>% count(dest)
 # mine
@@ -543,7 +544,7 @@ not_cancelled %>%
     group_by(tailnum) %>%
     summarise(dist_sum = sum(distance))
 
-#5.6.7.1.3 - could probably use the actual departure and arrival time dep_time, arr_time
+#5.6.7.3 - could probably use the actual departure and arrival time dep_time, arr_time
 # depends on how often these are specified, whilst the delay information is nulled out???
 
 
@@ -563,6 +564,44 @@ flights %>%
 # same again with delays over 15% -> far better relationship
 # there should be a better way of filtering for outliers
 
-# 5.6.7.1.4 who are the carriers with the worst delays?
+# 5.6.7.4 who are the carriers with the worst delays?
 # accounting for the worst airports too... (should be bad for all)
 ##flights %>% group_by(carrier, dest) %>% summarise(n()))
+
+# rank delays within an airport, then sum the ranks aross airports, raking, or averaging the carriers at that point
+not_cancelled %>%
+    group_by(carrier, dest) %>%
+    summarise(avg_delay = mean(dep_delay, na.rm = TRUE)) %>%
+    mutate(ontime_rank = min_rank(avg_delay)) %>%
+    group_by(carrier) %>%
+    summarize(total_ranks = sum(ontime_rank)) %>%
+    mutate(overall_ontime_perf = min_rank(total_ranks)) %>%
+    arrange(desc(overall_ontime_perf))
+
+# summing and then ranking on that sum did not work. split them apart, and it works fine
+
+# 5.6.7.5
+# For each tailnum, count the number of flights before the first delay of greater than 1 hour.
+# rank by flight date and time, and find lagging rank (by 1)
+# for the rank with the first 1 hour or longer delay
+
+not_cancelled %>%
+    group_by(tailnum) %>%
+    mutate(flight_order = min_rank(time_hour)) %>%
+    filter(dep_delay >= 60) %>%
+    mutate(hour_delay_order = min_rank(flight_order)) %>%
+    filter(hour_delay_order == 1) %>%
+    select(tailnum, time_hour, flight_order, dep_delay, hour_delay_order) %>%
+    arrange(tailnum, flight_order, dep_delay) %>%
+    mutate(cnt = count(flight_order))
+
+
+# 5.7 grouped mutates and filters
+# SKIPPING THIS - much of the same. moving to next section - scripts
+
+# 6
+
+
+
+
+
