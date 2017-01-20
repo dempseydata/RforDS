@@ -606,10 +606,194 @@ not_cancelled %>%
 # what kind of co-variation is there between my variables?
 
 
+# 7.3.4.1
+ggplot(diamonds) + 
+    geom_histogram(mapping = aes(x = x), binwidth = 0.5)
+
+diamonds %>%
+    filter(x <3) %>%
+    ggplot() + 
+    geom_histogram(mapping = aes(x = x), binwidth = 0.5)
+
+# X = 0 is a probable data entry error
+
+ggplot(diamonds) + 
+    geom_histogram(mapping = aes(x = z), binwidth = 0.5)
+
+diamonds %>%
+    filter(z > 10) %>%
+    ggplot() + 
+    geom_histogram(mapping = aes(x = z), binwidth = 0.5)
+# z = 0 is probab;e data problme
+# along with z = 32
+
+filter(diamonds, z > 31)
+# 1 record, z is defintiely wrong with this record
+
+filter(diamonds, x < 3)
+# 7 all 0 records, 1 with a Y but no other value
+
+filter(diamonds, z <1)
+# 20 with no Z
+
+# perhaps worth dropping records with all missing dims, but impute those with one missing??
+# x- length, y = width, z - depth
+
+diamonds %>%
+    ggplot() +
+    geom_histogram(aes(x=price), binwidth = 100) +
+    coord_cartesian(xlim= c(1000,2000), ylim=c(0,100))
+# there is an odd gap around 1500, with around 60 diamonds in comparison with neighboring bins having around 1000
+
+filter(diamonds, between(price, 1451, 1550))
+# 66 to be precise
+
+diamonds %>%
+    ggplot() +
+    geom_histogram(aes(x=price), binwidth = 500)
+# virtually gone at this level
+
+#7.3.4.2
+diamonds %>%
+    filter(between(carat, 0.90,1.2)) %>%
+    ggplot() +
+    geom_histogram(aes(x=carat), binwidth = 0.02 )
+
+#Hmm... are folks rating those above 0.91 as 1.00??? rounding up to get a higher price!!
+
+diamonds %>%
+    filter(between(carat, 1.90,2.2)) %>%
+    ggplot() +
+    geom_histogram(aes(x=carat), binwidth = 0.02 )
+# same thing at 2
+
+diamonds %>%
+    filter(between(carat, 1.40,1.7)) %>%
+    ggplot() +
+    geom_histogram(aes(x=carat), binwidth = 0.02 )
+# and at 1.5!! Duh, money
+
+# 7.3.4.4
+
+diamonds %>%
+    ggplot() +
+    geom_histogram(aes(x=price), binwidth = 100) +
+    coord_cartesian(xlim= c(1000,1500), ylim=c(0,100))
+# the bar at 1500 is still kept (but only half shown)
+
+diamonds %>%
+    ggplot() +
+    geom_histogram(aes(x=price), binwidth = 100) +
+    xlim(1000,1500)
+# with this, the end bars are REMOVED... not the best
+
+# 7.4
+
+#7.4.1
+diamonds2 <- diamonds %>% 
+    mutate(y = ifelse(y < 3 | y > 20, NA, y))
+
+filter(diamonds2, is.na(y))
+# 9 na records
+
+ggplot(diamonds2, aes(x=y)) + 
+    geom_histogram(binwidth = 0.5)
+# histogram drops the NA
+
+ggplot(diamonds2, aes(x=y)) +
+    geom_bar()
+# dropped here too? POOR CHOICE - use a character value instead
+
+diamonds %>%
+    mutate(cut = if_else(runif(n()) < 0.1, NA_character_, as.character(cut))) %>%
+    ggplot() +
+    geom_bar(mapping = aes(x = cut))
+# NA is plotted as another value, NA is just another category of the discrete variable
+
+# 7.5
+ggplot(data = diamonds, mapping = aes(x = price)) + 
+    geom_freqpoly(mapping = aes(colour = cut), binwidth = 500)
+ 
+ggplot(diamonds) + 
+    geom_bar(mapping = aes(x = cut))
+
+ggplot(diamonds) +
+    geom_boxplot(aes(x=cut, y=price))
 
 
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) +
+    geom_boxplot()
+
+# since class has no intrinsic order, reordering them by ascending hwy
+# note, the - infront of hwy, makes the order descending (from the x axis, upwards)
+ggplot(data = mpg) +
+    geom_boxplot(mapping = aes(x = reorder(class, -hwy, FUN = median), y = hwy)) +
+    coord_flip()
+
+#7.5.1 
+nycflights13::flights %>% 
+    mutate(
+        cancelled = is.na(dep_time),
+        sched_hour = sched_dep_time %/% 100,
+        sched_min = sched_dep_time %% 100,
+        sched_dep_time = sched_hour + sched_min / 60
+    ) %>% 
+    ggplot() +
+    geom_boxplot(mapping = aes(y = sched_dep_time, x = cancelled))
+
+#7.5.2
+summary(diamonds)
+
+ggplot(diamonds) +
+    geom_boxplot(aes(x=cut, y=price))
+
+ggplot(data = diamonds, mapping = aes(x = price, y=depth)) + 
+    geom_point(aes(color=cut))
+
+ggplot(diamonds) +
+    geom_boxplot(aes(x=cut, y=depth ))
+# it looks like it is DEPTH, because when you do a boxplot of depth and cut, "fair" is the only one with a non-overlapping IQR, and is higher than the rest. meaning the fair diamonds are BIGGER and hence, more expensive
+
+#7.5.3
+#install.packages('ggstance')
+library(ggstance)
+
+# nothe "h" suffixed geom - no need to coorflip
+ggplot(data = mpg) +
+    geom_boxploth(mapping = aes(y = reorder(class, hwy, FUN = median), x = hwy))
+
+#Might be useful if you KNOW you will be flipping, else ggplot works weel enough for playing around
+
+#7.5.4
+#install.packages('lvplot')
+
+#library(lvplot)
+
+#ggplot(diamonds) +
+
+#    geom_lv(aes(x=cut, y=price))
+
+# incompatible problems with ggproto
+# ggplot2 is too new, so cannot do
+
+#7.5.5
+
+ggplot(diamonds) +
+    geom_violin(aes(x=cut, y=price))
+
+ggplot(diamonds) +
+    geom_histogram(aes(x=price), binwidth =500) +
+    facet_wrap(~cut)
+
+#7.5.6
+install.packages('ggbeeswarm')
+library(ggbeeswarm)
+ggplot(data = mpg) +
+    geom_beeswarm(mapping = aes(x = reorder(class, hwy, FUN = median), y = hwy))
+# tweaks how the jitter lays out the points, reflecting a little bit, the shap of a violin plot
 
 
+#7.5.2 two categorical variables
 
 
 
