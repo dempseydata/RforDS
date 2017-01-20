@@ -606,10 +606,110 @@ not_cancelled %>%
 # what kind of co-variation is there between my variables?
 
 
+# 7.3.4.1
+ggplot(diamonds) + 
+    geom_histogram(mapping = aes(x = x), binwidth = 0.5)
 
+diamonds %>%
+    filter(x <3) %>%
+    ggplot() + 
+    geom_histogram(mapping = aes(x = x), binwidth = 0.5)
 
+# X = 0 is a probable data entry error
 
+ggplot(diamonds) + 
+    geom_histogram(mapping = aes(x = z), binwidth = 0.5)
 
+diamonds %>%
+    filter(z > 10) %>%
+    ggplot() + 
+    geom_histogram(mapping = aes(x = z), binwidth = 0.5)
+# z = 0 is probab;e data problme
+# along with z = 32
 
+filter(diamonds, z > 31)
+# 1 record, z is defintiely wrong with this record
 
+filter(diamonds, x < 3)
+# 7 all 0 records, 1 with a Y but no other value
 
+filter(diamonds, z <1)
+# 20 with no Z
+
+# perhaps worth dropping records with all missing dims, but impute those with one missing??
+# x- length, y = width, z - depth
+
+diamonds %>%
+    ggplot() +
+    geom_histogram(aes(x=price), binwidth = 100) +
+    coord_cartesian(xlim= c(1000,2000), ylim=c(0,100))
+# there is an odd gap around 1500, with around 60 diamonds in comparison with neighboring bins having around 1000
+
+filter(diamonds, between(price, 1451, 1550))
+# 66 to be precise
+
+diamonds %>%
+    ggplot() +
+    geom_histogram(aes(x=price), binwidth = 500)
+# virtually gone at this level
+
+#7.3.4.2
+diamonds %>%
+    filter(between(carat, 0.90,1.2)) %>%
+    ggplot() +
+    geom_histogram(aes(x=carat), binwidth = 0.02 )
+
+#Hmm... are folks rating those above 0.91 as 1.00??? rounding up to get a higher price!!
+
+diamonds %>%
+    filter(between(carat, 1.90,2.2)) %>%
+    ggplot() +
+    geom_histogram(aes(x=carat), binwidth = 0.02 )
+# same thing at 2
+
+diamonds %>%
+    filter(between(carat, 1.40,1.7)) %>%
+    ggplot() +
+    geom_histogram(aes(x=carat), binwidth = 0.02 )
+# and at 1.5!! Duh, money
+
+# 7.3.4.4
+
+diamonds %>%
+    ggplot() +
+    geom_histogram(aes(x=price), binwidth = 100) +
+    coord_cartesian(xlim= c(1000,1500), ylim=c(0,100))
+# the bar at 1500 is still kept (but only half shown)
+
+diamonds %>%
+    ggplot() +
+    geom_histogram(aes(x=price), binwidth = 100) +
+    xlim(1000,1500)
+# with this, the end bars are REMOVED... not the best
+
+# 7.4
+
+#7.4.1
+diamonds2 <- diamonds %>% 
+    mutate(y = ifelse(y < 3 | y > 20, NA, y))
+
+filter(diamonds2, is.na(y))
+# 9 na records
+
+ggplot(diamonds2, aes(x=y)) + 
+    geom_histogram(binwidth = 0.5)
+# histogram drops the NA
+
+ggplot(diamonds2, aes(x=y)) +
+    geom_bar()
+# dropped here too? POOR CHOICE - use a character value instead
+
+diamonds %>%
+    mutate(cut = if_else(runif(n()) < 0.1, NA_character_, as.character(cut))) %>%
+    ggplot() +
+    geom_bar(mapping = aes(x = cut))
+# NA is plotted as another value, NA is just another category of the discrete variable
+
+# 7.5
+
+ 
