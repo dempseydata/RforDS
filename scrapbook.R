@@ -709,6 +709,7 @@ diamonds %>%
     ggplot() +
     geom_bar(mapping = aes(x = cut))
 # NA is plotted as another value, NA is just another category of the discrete variable
+<<<<<<< HEAD
 
 # 7.5
 ggplot(data = diamonds, mapping = aes(x = price)) + 
@@ -797,3 +798,9 @@ ggplot(data = mpg) +
 
 
 
+=======
+
+# 7.5
+
+ 
+>>>>>>> 75693d60844df26e5f608b2f5fb16b9e918f33d7
