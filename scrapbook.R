@@ -796,11 +796,110 @@ ggplot(data = mpg) +
 
 #7.5.2 two categorical variables
 
-
-
-=======
-
-# 7.5
-
+#7.5.2.1
+# log og n() separates Fair into much clearer bandings for color
+diamonds %>%
+    group_by(color, cut) %>%
+    summarize(n = log(n())) %>%
+    ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(mapping = aes(fill = n))
  
->>>>>>> 75693d60844df26e5f608b2f5fb16b9e918f33d7
+diamonds %>% 
+    count(color, cut) %>%  
+    ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(mapping = aes(fill = n))
+
+
+#7.5.2.2
+# far too many destinations to make the plot readable really
+# ranking the destinations by overall departure volumes might help
+# grouping destinations together in someway, would help reduce the number of rows
+# alternatively, using a MAP and plotting the airports there could have been interesting!!!
+
+#7.5.2.4
+diamonds %>%
+    group_by(color, cut) %>%
+    summarize(n = log(n())) %>%
+    ggplot(mapping = aes(x = cut, y = color)) +
+    geom_tile(mapping = aes(fill = n))
+# no real difference other than personal preference. Labeling the X 
+
+
+#7.5.3
+
+#alpha allows you to see overplotting as the color density builds up
+ggplot(data = diamonds) + 
+    geom_point(mapping = aes(x = carat, y = price), alpha = 1 / 100)
+
+install.packages('hexbin')
+library(hexbin)
+
+ggplot(data = diamonds) +
+    geom_bin2d(mapping = aes(x = carat, y = price))
+
+ggplot(data = diamonds) +
+    geom_hex(mapping = aes(x = carat, y = price),stat = log(n()))
+
+#7.5.3.2
+# cut_number sets the number of cuts. not their width, even cuts, as shown by a consitent VARWIDTH
+ggplot(diamonds, aes(x = cut_number(price, 6), y = carat)) +
+    geom_boxplot(varwidth = TRUE) +
+    coord_flip() +
+    xlab("Price")
+
+# where as starting with a $0 boundary and spec'ing  the price width...
+ggplot(diamonds, aes(x = cut_width(price, 3000, boundary = 0), y = carat)) +
+    geom_boxplot(varwidth = TRUE) +
+    coord_flip() +
+    xlab("Price")
+
+#7.5.3
+# need to use cut width in orde to split the continuous variable carat, into discrete values
+ggplot(diamonds, aes(x = cut_width(carat, 3, boundary = 0), y = price, color = carat)) +
+    geom_boxplot(varwidth = TRUE) +
+    coord_flip() +
+    xlab("carat")
+# no surprise, big diamonds are very expensive regardless of all other factors
+
+#7.5.4
+ggplot(diamonds, aes(x = cut_width(carat, 3, boundary = 0), y = price, color = carat)) +
+    geom_boxplot(varwidth = TRUE) +
+    coord_flip() +
+    xlab("carat") +
+    facet_wrap(~cut)
+
+#7.5.5
+# Binned plots would group too many things together, and hide the odd looking points 
+
+
+#----
+install.packages('tabplot')
+library(tabplot)
+tableplot(diamonds)
+#still pretty darn cool
+
+# 7.6 patterns and models
+
+# load the library
+library(modelr)
+
+# linear model for log of price, predicted by log of carat
+mod <- lm(log(price) ~ log(carat), data = diamonds)
+
+# second data frame, add the residuals, then.. replace with the exponent (reverse the log of the linear model)
+diamonds2 <- diamonds %>% 
+    add_residuals(mod) %>% 
+    mutate(resid = exp(resid))
+
+# plot residual error against carat
+ggplot(data = diamonds2) + 
+    geom_point(mapping = aes(x = carat, y = resid))
+
+# split by cut
+ggplot(data = diamonds2) + 
+    geom_point(mapping = aes(x = carat, y = resid)) +
+    facet_wrap(~cut)
+
+# residual error slowly increases (on average) with the 'cut' of the diamond
+ggplot(data = diamonds2) + 
+    geom_boxplot(mapping = aes(x = cut, y = resid))
