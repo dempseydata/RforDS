@@ -796,11 +796,46 @@ ggplot(data = mpg) +
 
 #7.5.2 two categorical variables
 
-
-
-=======
-
-# 7.5
-
+#7.5.2.1
+# log og n() separates Fair into much clearer bandings for color
+diamonds %>%
+    group_by(color, cut) %>%
+    summarize(n = log(n())) %>%
+    ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(mapping = aes(fill = n))
  
->>>>>>> 75693d60844df26e5f608b2f5fb16b9e918f33d7
+diamonds %>% 
+    count(color, cut) %>%  
+    ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(mapping = aes(fill = n))
+
+
+#7.5.2.2
+# far too many destinations to make the plot readable really
+# ranking the destinations by overall departure volumes might help
+# grouping destinations together in someway, would help reduce the number of rows
+# alternatively, using a MAP and plotting the airports there could have been interesting!!!
+
+#7.5.2.4
+diamonds %>%
+    group_by(color, cut) %>%
+    summarize(n = log(n())) %>%
+    ggplot(mapping = aes(x = cut, y = color)) +
+    geom_tile(mapping = aes(fill = n))
+# no real difference other than personal preference. Labeling the X 
+
+
+#7.5.3
+
+#alpha allows you to see overplotting as the color density builds up
+ggplot(data = diamonds) + 
+    geom_point(mapping = aes(x = carat, y = price), alpha = 1 / 100)
+
+install.packages('hexbin')
+library(hexbin)
+
+ggplot(data = diamonds) +
+    geom_bin2d(mapping = aes(x = carat, y = price))
+
+ggplot(data = diamonds) +
+    geom_hex(mapping = aes(x = carat, y = price),stat = log(n()))
