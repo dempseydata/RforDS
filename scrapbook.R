@@ -839,7 +839,7 @@ ggplot(data = diamonds) +
 
 ggplot(data = diamonds) +
     geom_hex(mapping = aes(x = carat, y = price),stat = log(n()))
-<<<<<<< HEAD
+
 
 #7.5.3.2
 # cut_number sets the number of cuts. not their width, even cuts, as shown by a consitent VARWIDTH
@@ -904,5 +904,4 @@ ggplot(data = diamonds2) +
 # residual error slowly increases (on average) with the 'cut' of the diamond
 ggplot(data = diamonds2) + 
     geom_boxplot(mapping = aes(x = cut, y = resid))
-=======
->>>>>>> 5b0007acdf9ae64d511db2d9ac4d74d6bb093591
+
