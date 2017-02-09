@@ -15,7 +15,8 @@ library('tidyverse')
 # http://r4ds.had.co.nz/
 # solutions to exercises
 # https://jrnold.github.io/e4qf/index.html
-
+# github
+# https://github.com/hadley/r4ds
 
 
 ggplot(data = mpg) + 
@@ -905,3 +906,49 @@ ggplot(data = diamonds2) +
 ggplot(data = diamonds2) + 
     geom_boxplot(mapping = aes(x = cut, y = resid))
 
+##### WRANGLE chapter 9
+
+# this little snippet prints out all the columns of a tibble, but retians the 10 record limit for ease of reading
+nycflights13::flights %>% 
+    print(n = 10, width = Inf)
+
+#10.5.1
+# mtcars prints out all rows and columns = data.frame, tibbles do not
+# class(mtcars) returns data.frame
+# class(nycflights13::flights) returns "tbl_df", "tbl", "data.frame" - identifying it as a tibble
+
+#10.5.2
+# tibble does not return partially matched columns, and always returns anopther tibble
+
+#10.5.3
+# huh??? 
+
+#10.5.4
+annoying <- tibble(
+    `1` = 1:10,
+    `2` = `1` * 2 + rnorm(length(`1`))
+)
+annoying$'1' # must use the single quotes
+
+library(ggplot2)
+
+# must fully specify the variables in the tibble
+ggplot(annoying, aes(annoying$'1',annoying$'2')) +
+    geom_point()
+
+# again, must fully specify the variables
+annoying %>%
+    mutate('3' = annoying$'2'/annoying$'1')
+
+# rename columns
+names(annoying)
+names(annoying) <- c("one","two")
+
+#10.5.5
+# turns a list into a tibble
+enframe(c(a = 1, b = 2, c = 3))
+ 
+#10.5.6
+# skip
+
+# 11 data import
