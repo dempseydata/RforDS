@@ -952,3 +952,33 @@ enframe(c(a = 1, b = 2, c = 3))
 # skip
 
 # 11 data import
+
+heights <- read_csv('heights.csv')
+# auto creates a tibble
+
+# can skip = 2 to ignore first two lines
+# can comment = "#" to skip all lines begininging with #
+# col_names = FALSE for no headers, or pass as a vector to name them
+# na = "." to change what the NA string is from the file
+
+# 11.2.2.1 read_delim() is used for a pipe delim file
+
+# 11.2.2.2 skip
+
+# 11.2.2.3 
+# col_positions - most important
+# col_names to indicate headers on line 1 ???
+
+#11.2.2.4 Reading a column into a cell, not as a separater
+read_csv("x,y\n1,'a,b'")
+# cuts of y at 'a, comman typically needs escaping
+read_delim("x,y\n1,'a,b'", delim=",", quote="'")
+# quote is used to dientify what constitutes a string identifier
+
+# 11.2.2.5
+read_csv("a,b\n1,2,3\n4,5,6") # 2 column headers but 3 data columns, 3rd column gets dropped
+read_csv("a,b,c\n1,2\n1,2,3,4") # data is split 2/4 cells per row, when should be 3 cells
+read_csv("a,b\n\"1")  # 2 columns, 1 cell of data, and string of 1 is treated as an integer
+read_csv("a,b\n1,2\na,b") # not sure here.... unless the columns are pivoted in the input
+read_csv("a;b\n1;3") # semicolon is being treated as text, rather than a delimiter
+
